@@ -74,8 +74,49 @@ class _ParentalControlsScreenState extends State<ParentalControlsScreen> {
       return true;
     }
 
-    final result = await _showPinDialog();
-    return result == true;
+    bool verified = false;
+    await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          title: const Text('Enter PIN'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 4,
+            decoration: const InputDecoration(
+              hintText: 'PIN',
+              counterText: '',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (controller.text.length == 4 && parentalControls.verifyPin(controller.text)) {
+                  Navigator.pop(context, true);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Incorrect PIN'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Verify'),
+            ),
+          ],
+        );
+      },
+    ).then((result) => verified = result ?? false);
+    
+    return verified;
   }
 
   Future<void> _showFilterOptions() async {
